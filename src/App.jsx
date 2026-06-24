@@ -5,10 +5,12 @@ import AIBriefing from './components/AIBriefing.jsx';
 import FeaturedStory from './components/FeaturedStory.jsx';
 import NewsGrid from './components/NewsGrid.jsx';
 import { useNewsFeeds } from './hooks/useNewsFeeds.js';
+import { useStockPrices } from './hooks/useStockPrices.js';
 import { getBriefingAndFeatured } from './lib/ai.js';
 
 export default function App() {
   const { stories, fetchedAt, loading, error, refresh } = useNewsFeeds();
+  const { quotes, loading: quotesLoading } = useStockPrices();
 
   const [briefing, setBriefing] = useState(null);
   const [briefingLoading, setBriefingLoading] = useState(false);
@@ -51,7 +53,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg">
       <Header fetchedAt={fetchedAt} loading={loading} onRefresh={refresh} />
-      <Ticker stories={stories} loading={loading} />
+      <Ticker quotes={quotes} loading={quotesLoading} />
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
         <AIBriefing

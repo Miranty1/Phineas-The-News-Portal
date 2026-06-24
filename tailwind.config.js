@@ -58,7 +58,7 @@ export default {
         fadeIn: 'fadeIn 0.5s ease-out',
         shimmer: 'shimmer 1.4s linear infinite',
         blink: 'blink 1.1s step-end infinite',
-        ticker: 'ticker 45s linear infinite',
+        ticker: 'ticker 120s linear infinite',
         cardReveal: 'cardReveal 0.55s cubic-bezier(0.22, 1, 0.36, 1) both',
         riseIn: 'riseIn 0.7s cubic-bezier(0.22, 1, 0.36, 1) both',
         pulseGlow: 'pulseGlow 2.6s ease-in-out infinite',
