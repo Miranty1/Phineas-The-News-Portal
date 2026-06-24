@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #0a0e17;
+  }
+
+  body {
+    @apply bg-bg text-primary font-body antialiased;
+    position: relative;
+    min-height: 100vh;
+  }
+
+  /* Atmospheric depth: a soft cyan glow up top + a faint terminal grid.
+     Fixed so it doesn't scroll with content. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    pointer-events: none;
+    background:
+      radial-gradient(110% 70% at 50% -10%, rgba(34, 211, 238, 0.1), transparent 60%),
+      radial-gradient(80% 60% at 85% 0%, rgba(167, 139, 250, 0.06), transparent 55%),
+      linear-gradient(rgba(31, 41, 55, 0.35) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(31, 41, 55, 0.35) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+    /* Fade the grid out toward the bottom so it reads as atmosphere, not a table. */
+    -webkit-mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 90%);
+    mask-image: linear-gradient(to bottom, black 0%, black 35%, transparent 90%);
+    animation: bootGlow 1.6s ease-out both;
+  }
+
+  /* Grain overlay for texture (inline SVG noise). */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@layer components {
+  /* Shimmering skeleton block used in loading states. */
+  .skeleton {
+    @apply rounded bg-border/60;
+    background-image: linear-gradient(
+      90deg,
+      rgba(31, 41, 55, 0) 0,
+      rgba(75, 85, 99, 0.5) 40px,
+      rgba(31, 41, 55, 0) 80px
+    );
+    background-size: 800px 100%;
+    @apply animate-shimmer;
+  }
+
+  /* Block terminal cursor that trails revealing text. */
+  .cursor-blink {
+    @apply ml-0.5 inline-block w-[0.55ch] animate-blink bg-accent align-baseline;
+    height: 1em;
+    transform: translateY(0.12em);
+  }
+}
+
+/* Respect users who prefer less motion: drop animations, reveal instantly. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  body::before {
+    animation: none;
+  }
+}
