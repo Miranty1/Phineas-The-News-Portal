@@ -3,7 +3,7 @@ import Summary from './Summary.jsx';
 import { relativeTime } from '../lib/time.js';
 
 // The AI-picked most-significant story, rendered large below the briefing.
-export default function FeaturedStory({ story }) {
+export default function FeaturedStory({ story, onOpen }) {
   if (!story) return null;
 
   return (
@@ -21,14 +21,12 @@ export default function FeaturedStory({ story }) {
         </span>
       </div>
 
-      <a
-        href={story.link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="relative block font-mono text-xl font-semibold leading-tight text-primary transition-colors duration-200 group-hover:text-accent sm:text-2xl"
+      <button
+        onClick={() => onOpen(story)}
+        className="relative block text-left font-mono text-xl font-semibold leading-tight text-primary transition-colors duration-200 group-hover:text-accent sm:text-2xl"
       >
         {story.title}
-      </a>
+      </button>
 
       {story.snippet && (
         <p className="relative mt-3 text-[15px] leading-relaxed text-secondary">

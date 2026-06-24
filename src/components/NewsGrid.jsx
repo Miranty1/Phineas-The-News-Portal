@@ -17,7 +17,7 @@ function SkeletonCard() {
 
 // Responsive grid: 3 cols desktop / 2 tablet / 1 mobile. On load, cards cascade
 // in with a staggered per-index delay.
-export default function NewsGrid({ stories, loading }) {
+export default function NewsGrid({ stories, loading, onOpen }) {
   return (
     <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {loading
@@ -28,7 +28,7 @@ export default function NewsGrid({ stories, loading }) {
               className="animate-cardReveal"
               style={{ animationDelay: `${Math.min(i * 45, 600)}ms` }}
             >
-              <StoryCard story={story} />
+              <StoryCard story={story} onOpen={onOpen} />
             </div>
           ))}
     </section>

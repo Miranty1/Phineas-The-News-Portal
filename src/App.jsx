@@ -4,6 +4,7 @@ import Ticker from './components/Ticker.jsx';
 import AIBriefing from './components/AIBriefing.jsx';
 import FeaturedStory from './components/FeaturedStory.jsx';
 import NewsGrid from './components/NewsGrid.jsx';
+import ArticleReader from './components/ArticleReader.jsx';
 import { useNewsFeeds } from './hooks/useNewsFeeds.js';
 import { useStockPrices } from './hooks/useStockPrices.js';
 import { getBriefingAndFeatured } from './lib/ai.js';
@@ -50,6 +51,19 @@ export default function App() {
     ? stories.filter((_, i) => i !== featuredIndex)
     : stories;
 
+  // The story currently open in the full-screen reader, if any.
+  const [activeStory, setActiveStory] = useState(null);
+
+  // Readable sources open in the in-app reader; non-readable (free but not
+  // extractable, e.g. Yahoo) open the original site directly.
+  const openStory = (story) => {
+    if (story.readable === false) {
+      window.open(story.link, '_blank', 'noopener,noreferrer');
+    } else {
+      setActiveStory(story);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-bg">
       <Header fetchedAt={fetchedAt} loading={loading} onRefresh={refresh} />
@@ -63,7 +77,7 @@ export default function App() {
           error={briefingError}
         />
 
-        {!loading && featured && <FeaturedStory story={featured} />}
+        {!loading && featured && <FeaturedStory story={featured} onOpen={openStory} />}
 
         {error && (
           <p className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
@@ -71,12 +85,16 @@ export default function App() {
           </p>
         )}
 
-        <NewsGrid stories={gridStories} loading={loading} />
+        <NewsGrid stories={gridStories} loading={loading} onOpen={openStory} />
 
         <footer className="pb-8 pt-4 text-center font-mono text-[11px] text-secondary/70">
           Phineas · finance news aggregated from public RSS · summaries by Gemini
         </footer>
       </main>
+
+      {activeStory && (
+        <ArticleReader story={activeStory} onClose={() => setActiveStory(null)} />
+      )}
     </div>
   );
 }

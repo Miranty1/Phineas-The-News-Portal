@@ -23,6 +23,7 @@ async function fetchSource(source) {
     snippet: cleanSnippet(item.contentSnippet || item.content || item.summary || ''),
     source: source.name,
     sourceColor: source.color,
+    readable: source.readable,
     pubDate: item.isoDate || item.pubDate || null,
   }));
 }
