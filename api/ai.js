@@ -2,9 +2,10 @@
 // browser. Two modes:
 //   - "briefing":  headlines -> { briefing, featuredIndex }
 //   - "summarise": { title, snippet } -> markdown bullet points
-// flash-lite has a much higher free-tier daily request quota than 2.5-flash
-// (which is only 20 req/day) — plenty for briefings + on-demand summaries.
-const MODEL = 'gemini-2.5-flash-lite';
+// Each pinned model only allows ~20 free requests/day. The rolling "latest"
+// aliases track their own quota bucket, buying more headroom on the free tier.
+// The durable fix for repeated 429s is to enable billing on the Google project.
+const MODEL = 'gemini-flash-lite-latest';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 async function callGemini(prompt, { json = false } = {}) {
