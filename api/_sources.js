@@ -9,6 +9,9 @@ export const SOURCES = [
   { name: 'CNBC',          url: 'https://www.cnbc.com/id/10000664/device/rss/rss.html', color: '#ef4444', readable: true },
   { name: 'BBC Business',  url: 'https://feeds.bbci.co.uk/news/business/rss.xml',    color: '#fbbf24', readable: true },
   { name: 'Yahoo Finance', url: 'https://finance.yahoo.com/news/rssindex',          color: '#ec4899', readable: false },
+  // Investopedia has no usable RSS and blocks direct fetches, so its headlines come
+  // from its markets-news listing via the Jina reader (type: 'jina-list').
+  { name: 'Investopedia',  url: 'https://www.investopedia.com/markets-news-4427704', color: '#06b6d4', readable: true, type: 'jina-list' },
 ];
 
 // Hostnames whose articles the reader is allowed to fetch (SSRF allowlist) — only
@@ -19,4 +22,5 @@ export const ALLOWED_ARTICLE_HOSTS = [
   'cnbc.com',
   'bbc.co.uk',
   'bbc.com',
+  'investopedia.com',
 ];

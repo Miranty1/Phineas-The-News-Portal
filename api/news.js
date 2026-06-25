@@ -1,5 +1,6 @@
 import Parser from 'rss-parser';
 import { SOURCES } from './_sources.js';
+import { jinaFetch } from './_jina.js';
 
 const parser = new Parser({
   timeout: 8000,
@@ -28,8 +29,42 @@ async function fetchSource(source) {
   }));
 }
 
+// Section/navigation link text on the listing page that must not be treated as articles.
+const NON_ARTICLE_TITLES = /^(live markets news|markets news|personal finance|news)$/i;
+
+// Investopedia has no usable feed, so read its markets-news listing through Jina and
+// scrape genuine article links. Real articles have an 8-digit id suffix; category and
+// nav links use 7-digit ids, so the {8} match filters them out.
+async function fetchListSource(source) {
+  const md = await jinaFetch(source.url, { timeoutMs: 14000 });
+  const re = /\[([^\]]{15,130})\]\((https:\/\/www\.investopedia\.com\/[a-z0-9-]+-\d{8})\)/g;
+  const seen = new Set();
+  const stories = [];
+  let m;
+  while ((m = re.exec(md)) !== null) {
+    const title = m[1].trim();
+    const link = m[2];
+    if (seen.has(link) || NON_ARTICLE_TITLES.test(title)) continue;
+    seen.add(link);
+    stories.push({
+      title,
+      link,
+      snippet: '',
+      source: source.name,
+      sourceColor: source.color,
+      readable: source.readable,
+      pubDate: null,
+    });
+    if (stories.length >= 5) break;
+  }
+  if (!stories.length) throw new Error('no investopedia articles found');
+  return stories;
+}
+
 export default async function handler(req, res) {
-  const results = await Promise.allSettled(SOURCES.map(fetchSource));
+  const results = await Promise.allSettled(
+    SOURCES.map((s) => (s.type === 'jina-list' ? fetchListSource(s) : fetchSource(s)))
+  );
 
   const stories = results
     .filter((r) => r.status === 'fulfilled')

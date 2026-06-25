@@ -90,6 +90,9 @@ export default function ArticleReader({ story, onClose }) {
         <div className="mt-6 border-t border-border pt-6">
           {state === 'loading' && (
             <div className="space-y-3">
+              <p className="mb-4 font-mono text-xs text-secondary">
+                Fetching the full article… this can take a few seconds.
+              </p>
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="skeleton h-4" style={{ width: `${90 - (i % 4) * 12}%` }} />
               ))}
