@@ -4,10 +4,12 @@ import Ticker from './components/Ticker.jsx';
 import AIBriefing from './components/AIBriefing.jsx';
 import FeaturedStory from './components/FeaturedStory.jsx';
 import NewsGrid from './components/NewsGrid.jsx';
+import CategoryBar from './components/CategoryBar.jsx';
 import ArticleReader from './components/ArticleReader.jsx';
 import { useNewsFeeds } from './hooks/useNewsFeeds.js';
 import { useStockPrices } from './hooks/useStockPrices.js';
 import { getBriefingAndFeatured } from './lib/ai.js';
+import { CATEGORIES, matchesCategory, categoryCounts } from './lib/categories.js';
 
 export default function App() {
   const { stories, fetchedAt, loading, error, refresh } = useNewsFeeds();
@@ -29,7 +31,7 @@ export default function App() {
     getBriefingAndFeatured(stories)
       .then((res) => {
         if (cancelled) return;
-        setBriefing({ text: res.briefing, label: res.label });
+        setBriefing({ text: res.briefing });
         setFeaturedIndex(res.featuredIndex);
       })
       .catch((err) => {
@@ -54,6 +56,22 @@ export default function App() {
   // The story currently open in the full-screen reader, if any.
   const [activeStory, setActiveStory] = useState(null);
 
+  // Active category filter chip, remembered across sessions.
+  const [category, setCategory] = useState(
+    () => localStorage.getItem('phineas.category') || 'all'
+  );
+  const changeCategory = (id) => {
+    setCategory(id);
+    localStorage.setItem('phineas.category', id);
+  };
+
+  const counts = categoryCounts(gridStories);
+  const visibleStories = gridStories.filter((s) => matchesCategory(s, category));
+  // Hide the featured card when it doesn't fit the chosen lens.
+  const showFeatured =
+    !loading && featured && (category === 'all' || matchesCategory(featured, category));
+  const categoryLabel = CATEGORIES.find((c) => c.id === category)?.label || '';
+
   // Readable sources open in the in-app reader; non-readable (free but not
   // extractable, e.g. Yahoo) open the original site directly.
   const openStory = (story) => {
@@ -71,13 +89,12 @@ export default function App() {
 
       <main className="mx-auto max-w-6xl space-y-6 px-4 py-6 sm:px-6">
         <AIBriefing
-          label={briefing?.label}
           briefing={briefing?.text}
           loading={briefingLoading || (loading && stories.length === 0)}
           error={briefingError}
         />
 
-        {!loading && featured && <FeaturedStory story={featured} onOpen={openStory} />}
+        {showFeatured && <FeaturedStory story={featured} onOpen={openStory} />}
 
         {error && (
           <p className="rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-300">
@@ -85,7 +102,16 @@ export default function App() {
           </p>
         )}
 
-        <NewsGrid stories={gridStories} loading={loading} onOpen={openStory} />
+        {!loading && (
+          <CategoryBar active={category} counts={counts} onChange={changeCategory} />
+        )}
+
+        <NewsGrid
+          stories={visibleStories}
+          loading={loading}
+          onOpen={openStory}
+          emptyMessage={`No ${categoryLabel} stories right now.`}
+        />
 
         <footer className="pb-8 pt-4 text-center font-mono text-[11px] text-secondary/70">
           Phineas · finance news aggregated from public RSS · summaries by Gemini

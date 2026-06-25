@@ -45,22 +45,15 @@ async function callGemini(prompt, { json = false } = {}) {
   return text;
 }
 
-function timeOfDayLabel() {
-  const h = new Date().getHours();
-  if (h < 12) return "This Morning's Briefing";
-  if (h < 17) return 'Midday Update';
-  return 'Evening Wrap';
-}
-
 async function handleBriefing(headlines) {
   const list = headlines
-    .slice(0, 20)
-    .map((h, i) => `${i + 1}. [${h.source}] ${h.title}`)
+    .slice(0, 24)
+    .map((h, i) => `${i + 1}. ${h.au ? '[AU] ' : ''}[${h.source}] ${h.title}`)
     .join('\n');
 
-  const prompt = `You are a finance analyst. Given these top headlines, do two things:
-1. Write a 3-5 sentence market briefing summarising the key themes and mood across these stories.
-2. Pick the single most significant story and return its 1-based number.
+  const prompt = `You are a finance analyst writing for an Australian investor. Given these headlines (ones tagged [AU] are Australian-market relevant), do two things:
+1. Write a market briefing of about 4-6 sentences. FIRST cover what's happening in Australian markets (the [AU] stories: ASX, RBA, AUD, major ASX-listed companies). THEN broaden to international/global markets. If there are no Australian stories, say so briefly and focus on global markets.
+2. Pick the single most significant story overall and return its 1-based number.
 
 Headlines:
 ${list}
@@ -76,7 +69,6 @@ featuredIndex is the 1-based number from the list above.`;
   return {
     briefing: String(parsed.briefing || '').trim(),
     featuredIndex,
-    label: timeOfDayLabel(),
   };
 }
 

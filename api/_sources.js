@@ -12,6 +12,9 @@ export const SOURCES = [
   // Investopedia has no usable RSS and blocks direct fetches, so its headlines come
   // from its markets-news listing via the Jina reader (type: 'jina-list').
   { name: 'Investopedia',  url: 'https://www.investopedia.com/markets-news-4427704', color: '#06b6d4', readable: true, type: 'jina-list' },
+  // Australian sources (au: true) so the Australia/International filters have real content.
+  { name: 'ABC News',      url: 'https://www.abc.net.au/news/feed/51892/rss.xml',    color: '#14b8a6', readable: true, au: true },
+  { name: 'Guardian AU',   url: 'https://www.theguardian.com/au/business/rss',       color: '#84cc16', readable: true, au: true },
 ];
 
 // Hostnames whose articles the reader is allowed to fetch (SSRF allowlist) — only
@@ -23,4 +26,5 @@ export const ALLOWED_ARTICLE_HOSTS = [
   'bbc.co.uk',
   'bbc.com',
   'investopedia.com',
+  'abc.net.au',
 ];

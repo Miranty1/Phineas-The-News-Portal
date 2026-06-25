@@ -1,8 +1,17 @@
 import { useTypewriter } from '../hooks/useTypewriter.js';
 
+// Picks the heading from the user's *local* time (this runs in the browser, so it
+// reflects the viewer's timezone rather than the UTC server clock).
+function timeOfDayLabel() {
+  const h = new Date().getHours();
+  if (h < 12) return "This Morning's Briefing";
+  if (h < 17) return 'Midday Update';
+  return 'Evening Wrap';
+}
+
 // Hero AI briefing panel. Shows a shimmering skeleton while the AI call is in
 // flight, then types the briefing out like a live terminal feed.
-export default function AIBriefing({ label, briefing, loading, error }) {
+export default function AIBriefing({ briefing, loading, error }) {
   const { text, done } = useTypewriter(!loading && !error ? briefing : '');
 
   return (
@@ -12,7 +21,7 @@ export default function AIBriefing({ label, briefing, loading, error }) {
           ✦ AI
         </span>
         <h2 className="font-mono text-lg font-semibold text-primary">
-          {label || "This Morning's Briefing"}
+          {timeOfDayLabel()}
         </h2>
       </div>
 

@@ -17,7 +17,15 @@ function SkeletonCard() {
 
 // Responsive grid: 3 cols desktop / 2 tablet / 1 mobile. On load, cards cascade
 // in with a staggered per-index delay.
-export default function NewsGrid({ stories, loading, onOpen }) {
+export default function NewsGrid({ stories, loading, onOpen, emptyMessage }) {
+  if (!loading && stories.length === 0) {
+    return (
+      <section className="rounded-lg border border-border bg-surface/40 px-4 py-12 text-center font-mono text-sm text-secondary">
+        {emptyMessage || 'No stories right now.'}
+      </section>
+    );
+  }
+
   return (
     <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {loading

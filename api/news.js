@@ -25,6 +25,7 @@ async function fetchSource(source) {
     source: source.name,
     sourceColor: source.color,
     readable: source.readable,
+    sourceAU: source.au === true,
     pubDate: item.isoDate || item.pubDate || null,
   }));
 }
@@ -53,6 +54,7 @@ async function fetchListSource(source) {
       source: source.name,
       sourceColor: source.color,
       readable: source.readable,
+      sourceAU: source.au === true,
       pubDate: null,
     });
     if (stories.length >= 5) break;
