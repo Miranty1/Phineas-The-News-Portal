@@ -9,6 +9,9 @@
     "api/stock-news.js": { "maxDuration": 20 }
   },
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!api/|assets/|src/|@|node_modules/|.*\\.(?:js|mjs|jsx|ts|tsx|css|map|json|svg|png|jpg|jpeg|gif|ico|webp|woff|woff2|ttf|eot)$).*)",
+      "destination": "/index.html"
+    }
   ]
 }
