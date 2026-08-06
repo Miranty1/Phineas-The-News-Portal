@@ -27,6 +27,16 @@ export function summarise(title, snippet) {
   return postAI({ mode: 'summarise', title, snippet });
 }
 
+// Returns the combined market outlook + news sentiment for the Outlook page:
+// { outlook, sentiment, confidence, sentimentReason }. Headlines are ordered
+// Australia-first, matching the briefing, so the essay can lead with AU context.
+export function getMarketOutlook(stories) {
+  const headlines = stories
+    .map((s) => ({ title: s.title, source: s.source, au: isAustralian(s) }))
+    .sort((a, b) => Number(b.au) - Number(a.au));
+  return postAI({ mode: 'marketOutlook', headlines });
+}
+
 // Returns the structured AI stock outlook:
 // { sentiment, sentimentReason, technicalSummary, outlook, analystSummary, earningsSnapshot }.
 export function getStockOutlook(stock) {

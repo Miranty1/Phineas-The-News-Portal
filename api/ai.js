@@ -72,6 +72,37 @@ featuredIndex is the 1-based number from the list above.`;
   };
 }
 
+async function handleMarketOutlook(headlines) {
+  const list = headlines
+    .slice(0, 20)
+    .map((h, i) => `${i + 1}. ${h.au ? '[AU] ' : ''}[${h.source}] ${h.title}`)
+    .join('\n');
+
+  const prompt = `You are a senior financial analyst writing a daily market outlook for an Australian investor. Based on these headlines (ones tagged [AU] are Australian-market relevant), do two things:
+1. Write a detailed market outlook of 4-6 substantial paragraphs covering: the overall macro environment and market mood, key themes and sector dynamics, risk factors and potential catalysts, and what to watch this week. Lead with Australian-market context where the [AU] stories support it, then broaden to global markets. Be specific and insightful.
+2. Judge the overall market sentiment from these headlines: Bullish, Neutral, or Bearish, with a confidence score from 0 to 100 and a one-sentence reason.
+
+Headlines:
+${list}
+
+Respond ONLY as JSON matching:
+{"outlook": string (paragraphs separated by \\n\\n, plain text no markdown),
+ "sentiment": "Bullish" | "Neutral" | "Bearish",
+ "confidence": number (0-100),
+ "sentimentReason": string (one sentence)}`;
+
+  const text = await callGemini(prompt, { json: true });
+  const parsed = JSON.parse(text);
+  const allowed = ['Bullish', 'Neutral', 'Bearish'];
+  const confidence = Math.min(Math.max(Number(parsed.confidence) || 0, 0), 100);
+  return {
+    outlook: String(parsed.outlook || '').trim(),
+    sentiment: allowed.includes(parsed.sentiment) ? parsed.sentiment : 'Neutral',
+    confidence,
+    sentimentReason: String(parsed.sentimentReason || '').trim(),
+  };
+}
+
 async function handleStockOutlook(stock) {
   const fmt = (v, prefix = '', suffix = '') =>
     v == null || Number.isNaN(v) ? 'n/a' : `${prefix}${v}${suffix}`;
@@ -135,6 +166,13 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'headlines array is required' });
       }
       return res.status(200).json(await handleBriefing(headlines));
+    }
+
+    if (mode === 'marketOutlook') {
+      if (!Array.isArray(headlines) || headlines.length === 0) {
+        return res.status(400).json({ error: 'headlines array is required' });
+      }
+      return res.status(200).json(await handleMarketOutlook(headlines));
     }
 
     if (mode === 'stockOutlook') {
