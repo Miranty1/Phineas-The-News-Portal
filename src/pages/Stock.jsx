@@ -1,30 +1,68 @@
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import StockHeader from '../components/StockHeader.jsx';
+import StockChart from '../components/StockChart.jsx';
+import RelatedAssets from '../components/RelatedAssets.jsx';
+import StockNews from '../components/StockNews.jsx';
+import StockOutlook from '../components/StockOutlook.jsx';
+import { useStockDetail } from '../hooks/useStockDetail.js';
+import { getPeers } from '../lib/stocks.js';
 
-// Milestone A stub. The full stock detail page (header/metrics, interactive chart,
-// sector peers, ticker news, AI outlook) lands in Milestone B; this proves routing,
-// search, and ticker-click navigation end-to-end.
 export default function Stock() {
   const { ticker } = useParams();
   const symbol = (ticker || '').toUpperCase();
 
+  const { data, loading, error } = useStockDetail(symbol);
+
+  // Peers are independent and non-essential — fetched here so a failure never blocks
+  // the rest of the page.
+  const [peers, setPeers] = useState([]);
+  const [peersLoading, setPeersLoading] = useState(true);
+  useEffect(() => {
+    let cancelled = false;
+    setPeersLoading(true);
+    getPeers(symbol)
+      .then((d) => !cancelled && setPeers(d.peers || []))
+      .catch(() => !cancelled && setPeers([]))
+      .finally(() => !cancelled && setPeersLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [symbol]);
+
+  // Hard failure to load the core quote: show a message but keep the page navigable.
+  if (error && !data) {
+    return (
+      <section className="animate-fadeIn rounded-lg border border-border bg-surface px-6 py-10">
+        <h2 className="font-mono text-2xl font-bold text-primary">{symbol}</h2>
+        <p className="mt-3 font-body text-sm text-secondary">
+          Couldn't load data for {symbol} ({error}). Check the ticker symbol and try again.
+        </p>
+        <Link
+          to="/"
+          className="mt-6 inline-flex items-center gap-1.5 rounded border border-accent/40 bg-accent/10 px-3 py-1.5 font-mono text-xs text-accent transition hover:bg-accent/20"
+        >
+          ← Back to dashboard
+        </Link>
+      </section>
+    );
+  }
+
   return (
-    <section className="animate-fadeIn rounded-lg border border-border bg-surface px-6 py-10">
-      <p className="font-mono text-xs uppercase tracking-widest text-secondary">Stock</p>
-      <h2 className="mt-1 font-mono text-4xl font-bold tracking-tight text-primary">
-        {symbol}
-      </h2>
-      <p className="mt-4 max-w-prose font-body text-sm leading-relaxed text-secondary">
-        The full detail view — live quote and key metrics, an interactive price chart,
-        sector peers, ticker news, and an AI outlook — arrives in the next build. For now
-        this confirms navigation to{' '}
-        <span className="font-mono text-accent">/stock/{symbol}</span> is working.
-      </p>
-      <Link
-        to="/"
-        className="mt-6 inline-flex items-center gap-1.5 rounded border border-accent/40 bg-accent/10 px-3 py-1.5 font-mono text-xs text-accent transition hover:bg-accent/20"
-      >
-        ← Back to dashboard
-      </Link>
-    </section>
+    <div className="space-y-6">
+      {data ? (
+        <StockHeader stock={data} />
+      ) : (
+        <div className="skeleton h-48 rounded-lg" />
+      )}
+
+      <StockChart symbol={symbol} currency={data?.currency} />
+
+      <RelatedAssets peers={peers} loading={peersLoading} />
+
+      {data && <StockOutlook stock={data} />}
+
+      <StockNews symbol={symbol} />
+    </div>
   );
 }

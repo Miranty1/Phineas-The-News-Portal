@@ -72,6 +72,44 @@ featuredIndex is the 1-based number from the list above.`;
   };
 }
 
+async function handleStockOutlook(stock) {
+  const fmt = (v, prefix = '', suffix = '') =>
+    v == null || Number.isNaN(v) ? 'n/a' : `${prefix}${v}${suffix}`;
+
+  const prompt = `You are an equity analyst. Analyse this stock and respond ONLY as JSON.
+
+Stock: ${stock.name || stock.symbol} (${stock.symbol})
+Current price: ${fmt(stock.price, '$')}
+Change today: ${fmt(stock.changePercent, '', '%')}
+52-week range: ${fmt(stock.low52, '$')} - ${fmt(stock.high52, '$')}
+MA20: ${fmt(stock.ma20, '$')} | MA50: ${fmt(stock.ma50, '$')}
+Market cap: ${fmt(stock.marketCap)}
+P/E: ${fmt(stock.peRatio)}
+Analyst mean target: ${fmt(stock.analyst?.mean, '$')} (rating: ${stock.analyst?.rating || 'n/a'}, ${fmt(stock.analyst?.count)} analysts, range ${fmt(stock.analyst?.low, '$')}-${fmt(stock.analyst?.high, '$')})
+Last EPS: ${fmt(stock.earnings?.lastEps)} vs estimate ${fmt(stock.earnings?.lastEpsEstimate)}
+Recent headlines: ${(stock.headlines || []).slice(0, 5).join(' | ') || 'none'}
+
+Respond ONLY as JSON matching:
+{"sentiment": "Bullish" | "Neutral" | "Bearish",
+ "sentimentReason": "one sentence",
+ "technicalSummary": "2-3 sentences interpreting price vs MAs and the 52-week range",
+ "outlook": "3-4 paragraphs on recent performance, catalysts, and risks (plain text, use \\n\\n between paragraphs)",
+ "analystSummary": "2-3 sentences on the analyst consensus and implied upside/downside",
+ "earningsSnapshot": "2-3 sentences on the latest earnings vs estimate and what's next"}`;
+
+  const text = await callGemini(prompt, { json: true });
+  const parsed = JSON.parse(text);
+  const allowed = ['Bullish', 'Neutral', 'Bearish'];
+  return {
+    sentiment: allowed.includes(parsed.sentiment) ? parsed.sentiment : 'Neutral',
+    sentimentReason: String(parsed.sentimentReason || '').trim(),
+    technicalSummary: String(parsed.technicalSummary || '').trim(),
+    outlook: String(parsed.outlook || '').trim(),
+    analystSummary: String(parsed.analystSummary || '').trim(),
+    earningsSnapshot: String(parsed.earningsSnapshot || '').trim(),
+  };
+}
+
 async function handleSummarise(title, snippet) {
   const prompt = `Summarise this finance news article in 3-4 bullet points covering the key facts and implications for investors. Be concise and specific.
 
@@ -90,13 +128,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { mode, headlines, title, snippet } = req.body || {};
+    const { mode, headlines, title, snippet, stock } = req.body || {};
 
     if (mode === 'briefing') {
       if (!Array.isArray(headlines) || headlines.length === 0) {
         return res.status(400).json({ error: 'headlines array is required' });
       }
       return res.status(200).json(await handleBriefing(headlines));
+    }
+
+    if (mode === 'stockOutlook') {
+      if (!stock || !stock.symbol) {
+        return res.status(400).json({ error: 'stock object with symbol is required' });
+      }
+      return res.status(200).json(await handleStockOutlook(stock));
     }
 
     if (mode === 'summarise') {

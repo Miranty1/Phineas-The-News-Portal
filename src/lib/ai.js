@@ -26,3 +26,9 @@ export function getBriefingAndFeatured(stories) {
 export function summarise(title, snippet) {
   return postAI({ mode: 'summarise', title, snippet });
 }
+
+// Returns the structured AI stock outlook:
+// { sentiment, sentimentReason, technicalSummary, outlook, analystSummary, earningsSnapshot }.
+export function getStockOutlook(stock) {
+  return postAI({ mode: 'stockOutlook', stock });
+}

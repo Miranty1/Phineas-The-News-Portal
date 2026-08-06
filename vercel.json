@@ -5,7 +5,8 @@
   "framework": "vite",
   "functions": {
     "api/article.js": { "maxDuration": 60 },
-    "api/news.js": { "maxDuration": 30 }
+    "api/news.js": { "maxDuration": 30 },
+    "api/stock-news.js": { "maxDuration": 20 }
   },
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
