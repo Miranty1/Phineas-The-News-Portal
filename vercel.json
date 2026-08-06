@@ -6,5 +6,8 @@
   "functions": {
     "api/article.js": { "maxDuration": 60 },
     "api/news.js": { "maxDuration": 30 }
-  }
+  },
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ]
 }

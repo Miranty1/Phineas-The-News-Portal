@@ -1,16 +1,14 @@
-// Symbols shown in the top price ticker, in display order.
-// `^`-prefixed symbols are indices; BTC-USD is crypto. Yahoo's chart endpoint
-// resolves all of these without an API key.
-export const SYMBOLS = [
-  { symbol: '^GSPC',   label: 'S&P 500' },
-  { symbol: '^IXIC',   label: 'NASDAQ' },
-  { symbol: '^DJI',    label: 'DOW' },
-  { symbol: 'AAPL',    label: 'AAPL' },
-  { symbol: 'MSFT',    label: 'MSFT' },
-  { symbol: 'NVDA',    label: 'NVDA' },
-  { symbol: 'AMZN',    label: 'AMZN' },
-  { symbol: 'GOOGL',   label: 'GOOGL' },
-  { symbol: 'META',    label: 'META' },
-  { symbol: 'TSLA',    label: 'TSLA' },
-  { symbol: 'BTC-USD', label: 'BTC' },
+// Market indices shown fixed on the left of the top ticker, in display order.
+// `^`-prefixed symbols are indices; BTC-USD is crypto; AUDUSD=X is an FX pair.
+// Yahoo's chart endpoint resolves all of these without an API key.
+export const INDICES = [
+  { symbol: '^GSPC',    label: 'S&P 500' },
+  { symbol: '^IXIC',    label: 'NASDAQ' },
+  { symbol: '^DJI',     label: 'DOW' },
+  { symbol: '^AXJO',    label: 'ASX 200' },
+  { symbol: 'BTC-USD',  label: 'BTC' },
+  { symbol: 'AUDUSD=X', label: 'AUD/USD' },
 ];
+
+// Back-compat alias: existing callers importing SYMBOLS get the index set.
+export const SYMBOLS = INDICES;

@@ -1,4 +1,4 @@
-import { SYMBOLS } from './_symbols.js';
+import { INDICES } from './_symbols.js';
 
 // Yahoo Finance's chart endpoint returns the current price + previous close in its
 // `meta` block, with no API key required. Fetched server-side to avoid CORS.
@@ -29,9 +29,26 @@ async function fetchQuote({ symbol, label }) {
   };
 }
 
+// Parse `?symbols=AAPL,MSFT` into fetch targets. Symbols double as their own label
+// (the ticker). Capped and de-duped to keep the fan-out bounded. Falls back to the
+// fixed INDICES set when no `symbols` param is present.
+function resolveTargets(symbolsParam) {
+  if (!symbolsParam) return INDICES;
+  const symbols = [
+    ...new Set(
+      String(symbolsParam)
+        .split(',')
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean)
+    ),
+  ].slice(0, 25);
+  return symbols.map((symbol) => ({ symbol, label: symbol }));
+}
+
 export default async function handler(req, res) {
-  const results = await Promise.allSettled(SYMBOLS.map(fetchQuote));
-  // Preserve the configured order; drop any symbol that failed.
+  const targets = resolveTargets(req.query?.symbols);
+  const results = await Promise.allSettled(targets.map(fetchQuote));
+  // Preserve the requested order; drop any symbol that failed.
   const quotes = results
     .filter((r) => r.status === 'fulfilled')
     .map((r) => r.value);
